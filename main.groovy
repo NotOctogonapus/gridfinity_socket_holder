@@ -10,8 +10,8 @@ def generateSocketHolder(
 	def plateUnit  = Vitamins.get(plateUnitFile)
 	plateUnit = plateUnit.movez(-plateUnit.getMaxZ())
 
-	def newSockets = sockets.collect { it }
-	newSockets.eachWithIndex { it, i ->
+	def newSockets = []
+	sockets.eachWithIndex { it, i ->
 //		def cutter = CSG.unionAll([it, it.movey(20/Math.tan(Math.toRadians(-socketRotationDeg))).movez(20)])
 
 //		def polys = Slice.slice(it, new Transform().rotx(socketRotationDeg).movey(20/Math.tan(Math.toRadians(-socketRotationDeg))).movez(20), 0)
@@ -24,10 +24,21 @@ def generateSocketHolder(
 //		def movedSlice = slice.movey(20/Math.tan(Math.toRadians(-socketRotationDeg))).movez(20)
 //		def cutter = CSG.hullAll([slice, movedSlice])
 
+		// Slice the socket vertically
 		def poly = Slice.slice(it,new Transform().rotx(90),0)[0]
-		def cutter = Extrude.polygons(poly, 20)
-		cutter = cutter.toolOffset(1)
-		cutter = cutter.toYMin().rotx(90+socketRotationDeg).toYMin().toZMin()
+		def cutter = Extrude.polygons(poly, 30).rotx(90+socketRotationDeg)
+		def overhangCutter = Extrude.polygons(
+			poly.rotx(90+socketRotationDeg).movez(30),
+			poly.rotx(90+socketRotationDeg))
+		// the overhang cutter is already at the "min-y" side
+		cutter = cutter.union(overhangCutter)
+		// also move the overhang cutter to the "max-y" side
+		cutter = cutter.union(overhangCutter.movey(cutter.getMaxY() - overhangCutter.getMaxY()).movez(cutter.getMinZ()))
+		cutter = cutter.union(overhangCutter.movey(cutter.getMaxY() - overhangCutter.getMaxY()*1.5).movez(cutter.getMinZ()+12))
+		cutter = cutter.toYMin().toYMin().toZMin()
+		newSockets[i] = cutter
+//		return
+//		cutter = cutter.toolOffset(1)
 //		newSockets[i] = cutter
 //		return
 		//cutter = cutter.rotx(90+socketRotationDeg)
