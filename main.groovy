@@ -64,8 +64,9 @@ def generateSocketHolder(
 	def socketsVolume = new Cube(plateUnion.getTotalX(), plateUnion.getTotalY(), holderHeightMM).toCSG()
 	socketsVolume = socketsVolume.movex(-socketsVolume.getMinX()).movey(-socketsVolume.getMinY()).movez(-socketsVolume.getMinZ())
 	socketsVolume = socketsVolume.difference(socketsCutter)
-	
-	return [plateUnion, socketsVolume] //, CSG.unionAll(newSockets)
+
+	return CSG.unionAll([plateUnion, socketsVolume])
+//	return [plateUnion, socketsVolume] //, CSG.unionAll(newSockets)
 //	return socketsCutter
 }
 
